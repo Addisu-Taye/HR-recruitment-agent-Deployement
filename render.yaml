@@ -1,6 +1,6 @@
 # render.yaml
 
-# REQUIRED: Must be 'v1' to support the 'static' type correctly.
+# Use the official 'v1' tag for the YAML specification
 version: v1 
 
 services:
@@ -23,29 +23,26 @@ services:
       - key: WEB_CONCURRENCY
         value: "4"
       
-      # Set DATABASE_URL via linking the PostgreSQL service in the Render Dashboard
       - key: DATABASE_URL
-        value: "YOUR_DATABASE_URL" 
-      
+        value: "YOUR_DATABASE_URL" # Use the Render dashboard to link securely
       - key: HF_SPACE_API_URL
         value: "YOUR_GRADIO_SPACE_API_URL"
       - key: CORS_ALLOWED_ORIGINS
         value: "https://hr-recruitment-frontend.onrender.com"
 
   # ----------------------------------------------------------------
-  # 2. React Frontend (Static Site)
-  # - Uses 'static' type for CDN delivery and optimal cost.
+  # 2. React Frontend (Legacy Static Site Workaround)
   # ----------------------------------------------------------------
-  - type: static
+  - type: web  # Required to bypass your Render account's parsing issue
     name: hr-recruitment-frontend
-    region: frankfurt 
+    region: frankfurt
+    runtime: static # ✅ CORRECT: Signals this web service should be treated as a static site
     
-    rootDir: frontend 
+    rootDir: frontend
     
     buildCommand: "npm install && npm run build"
-    publishPath: build 
-
+    publishPath: build # ✅ CORRECT: Use the modern 'publishPath' property
+    
     envVars:
-      # Only the backend URL is needed for the frontend
       - key: REACT_APP_BACKEND_URL
         value: "https://hr-recruitment-backend.onrender.com"
