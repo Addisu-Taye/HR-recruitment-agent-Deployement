@@ -13,7 +13,6 @@ services:
     region: frankfurt
 
     buildCommand: "pip install -r requirements.txt"
-    # Note: startCommand should be on a single line
     startCommand: "python backend/manage.py collectstatic --noinput && python backend/manage.py migrate && gunicorn hr_core.wsgi:application"
 
     envVars:
@@ -24,32 +23,29 @@ services:
       - key: WEB_CONCURRENCY
         value: "4"
       
-      # Use the Render linking feature for the database.
+      # Set DATABASE_URL via linking the PostgreSQL service in the Render Dashboard
       - key: DATABASE_URL
-        value: "YOUR_DATABASE_URL"  # PLACEHOLDER: Set this via linking in the dashboard
+        value: "YOUR_DATABASE_URL" 
+      
       - key: HF_SPACE_API_URL
-        value: "YOUR_GRADIO_SPACE_API_URL" # PLACEHOLDER
+        value: "YOUR_GRADIO_SPACE_API_URL"
       - key: CORS_ALLOWED_ORIGINS
         value: "https://hr-recruitment-frontend.onrender.com"
 
   # ----------------------------------------------------------------
   # 2. React Frontend (Static Site)
-  # - CORRECTLY defined as 'static' for CDN delivery and low cost.
+  # - Uses 'static' type for CDN delivery and optimal cost.
   # ----------------------------------------------------------------
   - type: static
     name: hr-recruitment-frontend
-    region: frankfurt # Added region for consistency, though optional for Static
+    region: frankfurt 
     
-    # The root directory for the React code
     rootDir: frontend 
     
-    # Installation and build steps for the React app
     buildCommand: "npm install && npm run build"
-    
-    # CORRECT field name for the output directory
     publishPath: build 
 
     envVars:
-      # ONLY the backend URL is needed for the frontend
+      # Only the backend URL is needed for the frontend
       - key: REACT_APP_BACKEND_URL
         value: "https://hr-recruitment-backend.onrender.com"
