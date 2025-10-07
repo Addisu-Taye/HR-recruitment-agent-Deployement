@@ -21,8 +21,6 @@ The core architectural decision is to use Render's various service types to host
 
 Browser → Frontend → Backend → Database/AI Service
 
-markdown
-Copy code
 
 1. **Browser → Frontend:** User accesses the React Static Site URL.  
 2. **Frontend → Backend:** React (via Axios) calls the public Django API URL (e.g., `https://hr-backend.onrender.com/api/`).  
@@ -47,19 +45,14 @@ Whenever you push code to the configured branch (e.g., `main`):
 - **Frontend:** Render runs  
 npm install && npm run build
 
-markdown
-Copy code
 and serves the static files via its CDN.  
 - **Backend:** Render runs  
 pip install -r requirements.txt
 
-go
-Copy code
+
 then executes the `startCommand`:
 python backend/manage.py collectstatic --noinput && python backend/manage.py migrate && gunicorn hr_core.wsgi:application
 
-yaml
-Copy code
 
 ### 🧠 Zero-Downtime Updates
 Render always deploys new versions on separate infrastructure.  
@@ -104,8 +97,7 @@ Goal: Monitor AI response time and resource usage.
 Method: Use Render’s Metrics Dashboard for latency and CPU tracking; adjust autoscaling as needed.
 
 🧱 IV. Deployment & Testing Architecture Overview
-text
-Copy code
+
           ┌──────────────────────────┐
           │        Browser           │
           │ (User accessing site)    │
@@ -128,8 +120,7 @@ Copy code
 PostgreSQL DB     AI Service (Gradio/FastAPI)   Render Metrics
 Secure Link        Internal Prediction Calls    Logs & Monitoring
 🧩 V. Example render.yaml Blueprint (Simplified)
-yaml
-Copy code
+
 services:
   - type: web
     name: hr-recruitment-backend
@@ -168,8 +159,7 @@ CI/CD → Git-triggered Blueprints with render.yaml
 Testing → Integration, E2E, and performance monitoring with Render Metrics
 
 🏁 Deployment Flow
-scss
-Copy code
+
 GitHub Push → Render Blueprint → Auto Build → Zero-Downtime Deploy → Monitoring
 💡 Tip
 For the best visibility:
