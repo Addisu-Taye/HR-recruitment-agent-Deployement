@@ -26,15 +26,17 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: "https://hr-recruitment-frontend.onrender.com"
 
-# ----------------------------------------------------------------
-# 2. React Frontend (Static Site)
-# ----------------------------------------------------------------
-staticSites:
-  - name: hr-recruitment-frontend
+  # ----------------------------------------------------------------
+  # 2. React Frontend (Static Web Service)
+  # ----------------------------------------------------------------
+  - type: web
+    name: hr-recruitment-frontend
+    env: static
     region: frankfurt
     rootDir: frontend
+
     buildCommand: "npm install && npm run build"
-    publishPath: build
+    staticPublishPath: build
 
     envVars:
       - key: REACT_APP_BACKEND_URL
