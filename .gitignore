@@ -43,7 +43,7 @@ package-lock.json
 yarn.lock
 
 # React build output (ignore if letting Render/Docker build)
-frontend/build/
+#frontend/build/
 
 # Optional: local IDE files
 *.sublime-project
