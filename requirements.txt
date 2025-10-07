@@ -3,7 +3,7 @@ djangorestframework==3.14.0
 PyPDF2==3.0.1
 gunicorn==21.2.0
 requests==2.31.0
-brevo-python==2.1.0
+brevo-python==1.2.0
 
 # --- Required for Render/Production ---
 dj-database-url            # Required to parse the DATABASE_URL environment variable
