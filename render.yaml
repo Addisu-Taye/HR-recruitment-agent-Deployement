@@ -1,41 +1,58 @@
+# render.yaml
+
+# This specifies the version of the Render YAML specification
+version: v1
+
 services:
   # ----------------------------------------------------------------
   # 1. Django Backend (Web Service)
+  # - Hosts the API, handles database, and calls the Hugging Face API.
   # ----------------------------------------------------------------
   - type: web
     name: hr-recruitment-backend
     env: python
-    region: frankfurt
-    rootDir: backend  # Uncommented and pointed to backend directory
-
+    region: frankfurt # Match your PostgreSQL region
+    
+    # Install Python dependencies and prepare static files
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn hr_core.wsgi:application"
-
+    
+    # Run migrations, collect static files, and start Gunicorn
+    startCommand: "python backend/manage.py collectstatic --noinput && python backend/manage.py migrate && gunicorn hr_core.wsgi:application"
+    
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: "False"
       - key: WEB_CONCURRENCY
-        value: "4"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: hr-recruitment-db
-          property: connectionString
-      - key: HF_SPACE_API_URL
-        value: "https://your-space-name.hf.space/run/screen"
+        value: "4" # Good starting concurrency
+      # IMPORTANT: These must be set manually on the Render dashboard 
+      # or linked via the database connection feature.
+      - key: DATABASE_URL 
+      - key: HF_SPACE_API_URL 
+        value: "YOUR_GRADIO_SPACE_API_URL" 
+      # CORS setup
+      - key: CORS_ALLOWED_ORIGINS # Used by django-cors-headers if you use a setting like CORS_ALLOWED_ORIGIN_REGEXES
+        value: "https://hr-recruitment-frontend.onrender.com" # Update after frontend is deployed
 
   # ----------------------------------------------------------------
   # 2. React Frontend (Static Site)
+  # - Builds and serves the client-side UI files via a CDN.
   # ----------------------------------------------------------------
   - type: static
     name: hr-recruitment-frontend
     region: frankfurt
-    rootDir: frontend
-
+    
+    # The root directory for the frontend code
+    rootDir: frontend 
+    
+    # Installation and build steps for the React app
     buildCommand: "npm install && npm run build"
-    publishPath: build
-
+    
+    # The directory where the compiled static files are located after the build
+    publishPath: build 
+    
     envVars:
+      # This is crucial: Tell the frontend where to find the backend API
       - key: REACT_APP_BACKEND_URL
-        value: "https://hr-recruitment-backend.onrender.com"
+        value: "https://hr-recruitment-backend.onrender.com" # Use the backend service's public URL
