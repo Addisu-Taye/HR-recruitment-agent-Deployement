@@ -1,0 +1,41 @@
+services:
+  # ----------------------------------------------------------------
+  # 1. Django Backend (Web Service)
+  # ----------------------------------------------------------------
+  - type: web
+    name: hr-recruitment-backend
+    env: python
+    region: frankfurt
+    rootDir: backend  # Uncommented and pointed to backend directory
+
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn hr_core.wsgi:application"
+
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: WEB_CONCURRENCY
+        value: "4"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hr-recruitment-db
+          property: connectionString
+      - key: HF_SPACE_API_URL
+        value: "https://your-space-name.hf.space/run/screen"
+
+  # ----------------------------------------------------------------
+  # 2. React Frontend (Static Site)
+  # ----------------------------------------------------------------
+  - type: static
+    name: hr-recruitment-frontend
+    region: frankfurt
+    rootDir: frontend
+
+    buildCommand: "npm install && npm run build"
+    publishPath: build
+
+    envVars:
+      - key: REACT_APP_BACKEND_URL
+        value: "https://hr-recruitment-backend.onrender.com"
