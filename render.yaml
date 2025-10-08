@@ -1,7 +1,5 @@
 # render.yaml
-
-# Use the official 'v1' tag for the YAML specification
-version: v1 
+version: "v1"
 
 services:
   # ----------------------------------------------------------------
@@ -12,15 +10,16 @@ services:
     env: python
     region: frankfurt
     plan: starter
-    rootDir: backend # Set the project root to the backend directory
+    rootDir: backend
 
-    # Optimized buildCommand for PII/spaCy model linking
     buildCommand: |
       pip install -r requirements.txt
       python -m spacy link en_core_web_md en_core_web_md --force
-    
-    # Corrected startCommand to run relative to the 'backend' rootDir
-    startCommand: "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn hr_core.wsgi:application"
+
+    startCommand: >
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate &&
+      gunicorn hr_core.wsgi:application
 
     envVars:
       - key: SECRET_KEY
@@ -29,28 +28,30 @@ services:
         value: "False"
       - key: WEB_CONCURRENCY
         value: "4"
-      
-      # Database Link: Replace 'hr-recruitment-db' with the actual name of your PostgreSQL service
+
+      # Link to PostgreSQL database service
       - key: DATABASE_URL
-        fromDatabase: hr-recruitment-db 
-      
-      # AI Service URL
+        fromDatabase:
+          name: hr-recruitment-db
+          property: connectionString
+
+      # External Hugging Face API
       - key: HF_SPACE_API_URL
         value: "YOUR_GRADIO_SPACE_API_URL"
-      
-      # Brevo/SMTP Config for Email
+
+      # Email (Brevo SMTP)
       - key: BREVO_SMTP_KEY
         generateValue: true
       - key: BREVO_SMTP_LOGIN
         value: "your-brevo-login-email@example.com"
-      
-      # Celery/Redis Broker URL (Internal link to the Redis instance)
+
+      # Celery Redis broker
       - key: CELERY_BROKER_URL
-        value: "redis://hr-recruitment-redis:6379/0" 
+        value: "redis://hr-recruitment-redis:6379/0"
 
       - key: CORS_ALLOWED_ORIGINS
         value: "https://hr-recruitment-frontend.onrender.com"
-        
+
   # ----------------------------------------------------------------
   # 2. Celery Worker (Background Service)
   # ----------------------------------------------------------------
@@ -59,26 +60,30 @@ services:
     env: python
     region: frankfurt
     plan: starter
-    rootDir: backend # Set the project root to the backend directory
-    
-    # Must use the same build command as the web service to get spaCy model
+    rootDir: backend
+
     buildCommand: |
       pip install -r requirements.txt
       python -m spacy link en_core_web_md en_core_web_md --force
-      
-    # Command to start the Celery worker process (run relative to the 'backend' rootDir)
+
     startCommand: "celery -A hr_core worker -l info"
-    
+
     envVars:
       - key: SECRET_KEY
-        fromService: hr-recruitment-backend # Inherit from the web service
+        fromService:
+          name: hr-recruitment-backend
+          type: envVar
+          property: SECRET_KEY
       - key: DATABASE_URL
-        fromService: hr-recruitment-backend # Inherit the DB URL (internal) from the web service
+        fromService:
+          name: hr-recruitment-backend
+          type: envVar
+          property: DATABASE_URL
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
 
   # ----------------------------------------------------------------
-  # 3. Redis Service (Message Broker for Celery)
+  # 3. Redis (Celery Message Broker)
   # ----------------------------------------------------------------
   - type: redis
     name: hr-recruitment-redis
@@ -86,18 +91,25 @@ services:
     plan: starter
 
   # ----------------------------------------------------------------
-  # 4. React Frontend (Static Site)
+  # 4. PostgreSQL Database
+  # ----------------------------------------------------------------
+  - type: postgresql
+    name: hr-recruitment-db
+    region: frankfurt
+    plan: starter
+
+  # ----------------------------------------------------------------
+  # 5. React Frontend (Static Site)
   # ----------------------------------------------------------------
   - type: web
     name: hr-recruitment-frontend
     region: frankfurt
-    runtime: static 
-    
+    runtime: static
     rootDir: frontend
-    
+
     buildCommand: "npm install && npm run build"
-    publishPath: build 
-    
+    publishPath: build
+
     envVars:
       - key: REACT_APP_BACKEND_URL
         value: "https://hr-recruitment-backend.onrender.com"
