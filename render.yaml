@@ -29,23 +29,23 @@ services:
       - key: WEB_CONCURRENCY
         value: "4"
 
-      # Link to PostgreSQL database service
+      # Link to existing PostgreSQL database on Render
       - key: DATABASE_URL
         fromDatabase:
           name: hr-recruitment-db
           property: connectionString
 
-      # External Hugging Face API
+      # Hugging Face API endpoint
       - key: HF_SPACE_API_URL
         value: "YOUR_GRADIO_SPACE_API_URL"
 
-      # Email (Brevo SMTP)
+      # Email configuration (Brevo SMTP)
       - key: BREVO_SMTP_KEY
         generateValue: true
       - key: BREVO_SMTP_LOGIN
         value: "your-brevo-login-email@example.com"
 
-      # Celery Redis broker
+      # Celery/Redis broker connection
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
 
@@ -53,7 +53,7 @@ services:
         value: "https://hr-recruitment-frontend.onrender.com"
 
   # ----------------------------------------------------------------
-  # 2. Celery Worker (Background Service)
+  # 2. Celery Worker
   # ----------------------------------------------------------------
   - type: worker
     name: hr-recruitment-worker
@@ -83,7 +83,7 @@ services:
         value: "redis://hr-recruitment-redis:6379/0"
 
   # ----------------------------------------------------------------
-  # 3. Redis (Celery Message Broker)
+  # 3. Redis Service (Celery Message Broker)
   # ----------------------------------------------------------------
   - type: redis
     name: hr-recruitment-redis
@@ -91,15 +91,7 @@ services:
     plan: starter
 
   # ----------------------------------------------------------------
-  # 4. PostgreSQL Database
-  # ----------------------------------------------------------------
-  - type: postgresql
-    name: hr-recruitment-db
-    region: frankfurt
-    plan: starter
-
-  # ----------------------------------------------------------------
-  # 5. React Frontend (Static Site)
+  # 4. React Frontend (Static Site)
   # ----------------------------------------------------------------
   - type: web
     name: hr-recruitment-frontend
