@@ -11,16 +11,15 @@ services:
     name: hr-recruitment-backend
     env: python
     region: frankfurt
-    plan: starter # Use a paid tier for better stability than free
-    rootDir: backend # <--- FIX 1: Specify the root directory for Django
+    plan: starter
+    rootDir: backend # Set the project root to the backend directory
 
-    # Optimized buildCommand for PII/spaCy
+    # Optimized buildCommand for PII/spaCy model linking
     buildCommand: |
       pip install -r requirements.txt
-      # Linking the model ensures spaCy can find it when Django initializes
       python -m spacy link en_core_web_md en_core_web_md --force
     
-    # FIX 2: Correct Gunicorn path to run from the manage.py location (backend/)
+    # Corrected startCommand to run relative to the 'backend' rootDir
     startCommand: "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn hr_core.wsgi:application"
 
     envVars:
@@ -31,23 +30,23 @@ services:
       - key: WEB_CONCURRENCY
         value: "4"
       
-      # FIX 3: Link the database using the internal name for security and speed
+      # Database Link: Replace 'hr-recruitment-db' with the actual name of your PostgreSQL service
       - key: DATABASE_URL
-        fromDatabase: hr-recruitment-db # Replace 'hr-recruitment-db' with the actual name of your PostgreSQL service
+        fromDatabase: hr-recruitment-db 
       
-      # AI Service URLs
+      # AI Service URL
       - key: HF_SPACE_API_URL
         value: "YOUR_GRADIO_SPACE_API_URL"
       
       # Brevo/SMTP Config for Email
       - key: BREVO_SMTP_KEY
-        generateValue: true # Securely store your Brevo SMTP key
+        generateValue: true
       - key: BREVO_SMTP_LOGIN
         value: "your-brevo-login-email@example.com"
       
       # Celery/Redis Broker URL (Internal link to the Redis instance)
       - key: CELERY_BROKER_URL
-        value: "redis://hr-recruitment-redis:6379/0" # Internal name link to the redis service
+        value: "redis://hr-recruitment-redis:6379/0" 
 
       - key: CORS_ALLOWED_ORIGINS
         value: "https://hr-recruitment-frontend.onrender.com"
@@ -60,24 +59,21 @@ services:
     env: python
     region: frankfurt
     plan: starter
-    rootDir: backend # <--- FIX 1: Specify the root directory for Celery
-
+    rootDir: backend # Set the project root to the backend directory
+    
     # Must use the same build command as the web service to get spaCy model
     buildCommand: |
       pip install -r requirements.txt
       python -m spacy link en_core_web_md en_core_web_md --force
       
-    # Command to start the Celery worker process (needs to be run from the backend directory)
+    # Command to start the Celery worker process (run relative to the 'backend' rootDir)
     startCommand: "celery -A hr_core worker -l info"
     
     envVars:
       - key: SECRET_KEY
-        fromService: hr-recruitment-backend
-      
-      # FIX 4: Worker should inherit DATABASE_URL from the web service which got it from the database link
-      - key: DATABASE_URL 
-        fromDatabase: hr-recruitment-db  
-        
+        fromService: hr-recruitment-backend # Inherit from the web service
+      - key: DATABASE_URL
+        fromService: hr-recruitment-backend # Inherit the DB URL (internal) from the web service
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
 
