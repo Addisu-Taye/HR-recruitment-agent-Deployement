@@ -1,7 +1,7 @@
 version: 1
 
 services:
-  # Django Backend
+  # Django Backend (Web API)
   - type: web
     name: hr-recruitment-backend
     env: python
@@ -58,19 +58,20 @@ services:
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
 
-  # Redis
+  # Redis Service
   - type: redis
     name: hr-recruitment-redis
     region: frankfurt
     plan: starter
+    ipAllowList: []  # ✅ Required for Render Redis — allows internal connections
 
-  # React Frontend (Static)
+  # React Frontend (Static Site)
   - type: web
     name: hr-recruitment-frontend
     env: static
     plan: starter
     buildCommand: "npm install --prefix frontend && npm run build --prefix frontend"
-    startCommand: ""
+    publishPath: frontend/build
     envVars:
       - key: REACT_APP_BACKEND_URL
         value: "https://hr-recruitment-backend.onrender.com"
