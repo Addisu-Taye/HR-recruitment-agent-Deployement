@@ -8,7 +8,7 @@ services:
     name: hr-recruitment-backend
     env: python
     region: frankfurt
-    plan: starter
+    plan: free
     rootDir: backend
     buildCommand: |
       pip install -r requirements.txt
@@ -46,7 +46,7 @@ services:
     name: hr-recruitment-worker
     env: python
     region: frankfurt
-    plan: starter
+    plan: free
     rootDir: backend
     buildCommand: |
       pip install -r requirements.txt
@@ -68,7 +68,7 @@ services:
   - type: redis
     name: hr-recruitment-redis
     region: frankfurt
-    plan: starter
+    plan: free
     ipAllowList: [] # ✅ required by Render to allow internal access
 
   # ----------------------------------------------------------------
