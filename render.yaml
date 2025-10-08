@@ -7,7 +7,7 @@ services:
   - type: web
     name: hr-recruitment-backend
     env: python
-    plan: free-web-service
+    plan: starter
     rootDir: backend
 
     buildCommand: |
@@ -43,12 +43,12 @@ services:
         value: "https://hr-recruitment-frontend.onrender.com"
 
   # ----------------------------------------------------------------
-  # 2. Celery Worker (Background Tasks)
+  # 2. Celery Worker
   # ----------------------------------------------------------------
   - type: worker
     name: hr-recruitment-worker
     env: python
-    plan: free-web-service
+    plan: starter
     rootDir: backend
 
     buildCommand: |
@@ -69,22 +69,22 @@ services:
         value: "redis://hr-recruitment-redis:6379/0"
 
   # ----------------------------------------------------------------
-  # 3. Redis (Message Broker for Celery)
+  # 3. Redis Service
   # ----------------------------------------------------------------
   - type: redis
     name: hr-recruitment-redis
-    ipAllowList: [] # Allows all internal connections
+    ipAllowList: []
     plan: free
 
   # ----------------------------------------------------------------
-  # 4. React Frontend (Static Hosting)
+  # 4. React Frontend (Static Build)
   # ----------------------------------------------------------------
   - type: web
     name: hr-recruitment-frontend
     env: static
+    plan: starter
     buildCommand: npm install && npm run build
     staticPublishPath: build
-    plan: free-web-service
 
     envVars:
       - key: REACT_APP_BACKEND_URL
