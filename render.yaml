@@ -29,7 +29,7 @@ services:
       - key: WEB_CONCURRENCY
         value: "4"
 
-      # Link to existing PostgreSQL database on Render
+      # PostgreSQL database (create manually in Render)
       - key: DATABASE_URL
         fromDatabase:
           name: hr-recruitment-db
@@ -93,11 +93,14 @@ services:
   # ----------------------------------------------------------------
   # 4. React Frontend (Static Site)
   # ----------------------------------------------------------------
-  - type: static
+  - type: web
     name: hr-recruitment-frontend
+    env: static
     region: frankfurt
+    plan: starter
+
     buildCommand: "npm install --prefix frontend && npm run build --prefix frontend"
-    publishPath: frontend/build
+    startCommand: ""  # static site doesn't need a server
 
     envVars:
       - key: REACT_APP_BACKEND_URL
