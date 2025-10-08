@@ -1,9 +1,9 @@
 # render.yaml
-version: "v1"
+version: 1
 
 services:
   # ----------------------------------------------------------------
-  # 1. Django Backend (Web Service - API)
+  # 1. Django Backend
   # ----------------------------------------------------------------
   - type: web
     name: hr-recruitment-backend
@@ -28,27 +28,18 @@ services:
         value: "False"
       - key: WEB_CONCURRENCY
         value: "4"
-
-      # PostgreSQL database (create manually in Render)
       - key: DATABASE_URL
         fromDatabase:
           name: hr-recruitment-db
           property: connectionString
-
-      # Hugging Face API endpoint
       - key: HF_SPACE_API_URL
         value: "YOUR_GRADIO_SPACE_API_URL"
-
-      # Email configuration (Brevo SMTP)
       - key: BREVO_SMTP_KEY
         generateValue: true
       - key: BREVO_SMTP_LOGIN
         value: "your-brevo-login-email@example.com"
-
-      # Celery/Redis broker connection
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
-
       - key: CORS_ALLOWED_ORIGINS
         value: "https://hr-recruitment-frontend.onrender.com"
 
@@ -69,26 +60,26 @@ services:
     startCommand: "celery -A hr_core worker -l info"
 
     envVars:
+      # Worker must define all envVars manually
       - key: SECRET_KEY
-        fromService:
-          name: hr-recruitment-backend
-          type: envVar
-          property: SECRET_KEY
+        value: "<SAME_SECRET_KEY_AS_BACKEND>"
       - key: DATABASE_URL
-        fromService:
-          name: hr-recruitment-backend
-          type: envVar
-          property: DATABASE_URL
+        fromDatabase:
+          name: hr-recruitment-db
+          property: connectionString
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
 
   # ----------------------------------------------------------------
-  # 3. Redis Service (Celery Message Broker)
+  # 3. Redis Service
   # ----------------------------------------------------------------
   - type: redis
     name: hr-recruitment-redis
     region: frankfurt
     plan: starter
+    allowList:
+      - 127.0.0.1
+      - 10.0.0.0/8
 
   # ----------------------------------------------------------------
   # 4. React Frontend (Static Site)
@@ -96,7 +87,6 @@ services:
   - type: web
     name: hr-recruitment-frontend
     env: static
-    region: frankfurt
     plan: starter
 
     buildCommand: "npm install --prefix frontend && npm run build --prefix frontend"
