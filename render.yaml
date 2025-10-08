@@ -93,13 +93,11 @@ services:
   # ----------------------------------------------------------------
   # 4. React Frontend (Static Site)
   # ----------------------------------------------------------------
-  - type: web
+  - type: static
     name: hr-recruitment-frontend
     region: frankfurt
-    runtime: static
-    rootDir: frontend
-    buildCommand: "npm install && npm run build"
-    publishPath: build   # <-- must be relative to rootDir
+    buildCommand: "npm install --prefix frontend && npm run build --prefix frontend"
+    publishPath: frontend/build
 
     envVars:
       - key: REACT_APP_BACKEND_URL
