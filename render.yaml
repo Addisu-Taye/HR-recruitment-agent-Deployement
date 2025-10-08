@@ -63,9 +63,6 @@ services:
     name: hr-recruitment-redis
     region: frankfurt
     plan: starter
-    allowlist:
-      - "10.0.0.0/8"
-      - "127.0.0.1"
 
   # React Frontend (Static)
   - type: web
