@@ -12,13 +12,16 @@ services:
     env: python
     region: frankfurt
     plan: starter # Use a paid tier for better stability than free
+    rootDir: backend # <--- FIX 1: Specify the root directory for Django
 
-    # Optimized buildCommand for PII/spaCy, removing unnecessary 'download'
+    # Optimized buildCommand for PII/spaCy
     buildCommand: |
       pip install -r requirements.txt
+      # Linking the model ensures spaCy can find it when Django initializes
       python -m spacy link en_core_web_md en_core_web_md --force
     
-    startCommand: "python backend/manage.py collectstatic --noinput && python backend/manage.py migrate && gunicorn hr_core.wsgi:application"
+    # FIX 2: Correct Gunicorn path to run from the manage.py location (backend/)
+    startCommand: "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn hr_core.wsgi:application"
 
     envVars:
       - key: SECRET_KEY
@@ -28,9 +31,11 @@ services:
       - key: WEB_CONCURRENCY
         value: "4"
       
-      # Database and AI Service URLs
+      # FIX 3: Link the database using the internal name for security and speed
       - key: DATABASE_URL
-        value: "YOUR_DATABASE_URL" # Use the Render dashboard to link securely
+        fromDatabase: hr-recruitment-db # Replace 'hr-recruitment-db' with the actual name of your PostgreSQL service
+      
+      # AI Service URLs
       - key: HF_SPACE_API_URL
         value: "YOUR_GRADIO_SPACE_API_URL"
       
@@ -54,21 +59,25 @@ services:
     name: hr-recruitment-worker
     env: python
     region: frankfurt
-    plan: starter # Dedicated worker service usually needs Starter/Pro tier
-    
+    plan: starter
+    rootDir: backend # <--- FIX 1: Specify the root directory for Celery
+
     # Must use the same build command as the web service to get spaCy model
     buildCommand: |
       pip install -r requirements.txt
       python -m spacy link en_core_web_md en_core_web_md --force
       
-    # Command to start the Celery worker process
+    # Command to start the Celery worker process (needs to be run from the backend directory)
     startCommand: "celery -A hr_core worker -l info"
     
     envVars:
       - key: SECRET_KEY
-        fromService: hr-recruitment-backend # Reuse the secret key from the API service
-      - key: DATABASE_URL
         fromService: hr-recruitment-backend
+      
+      # FIX 4: Worker should inherit DATABASE_URL from the web service which got it from the database link
+      - key: DATABASE_URL 
+        fromService: hr-recruitment-backend 
+        
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
 
@@ -78,7 +87,7 @@ services:
   - type: redis
     name: hr-recruitment-redis
     region: frankfurt
-    plan: starter # Redis usually requires at least a Starter plan
+    plan: starter
 
   # ----------------------------------------------------------------
   # 4. React Frontend (Static Site)
