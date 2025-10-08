@@ -60,7 +60,7 @@ services:
     startCommand: "celery -A hr_core worker -l info"
 
     envVars:
-      # Worker must define all envVars manually
+      # Worker must define SECRET_KEY manually (same as backend)
       - key: SECRET_KEY
         value: "<SAME_SECRET_KEY_AS_BACKEND>"
       - key: DATABASE_URL
@@ -77,9 +77,6 @@ services:
     name: hr-recruitment-redis
     region: frankfurt
     plan: starter
-    allowList:
-      - 127.0.0.1
-      - 10.0.0.0/8
 
   # ----------------------------------------------------------------
   # 4. React Frontend (Static Site)
