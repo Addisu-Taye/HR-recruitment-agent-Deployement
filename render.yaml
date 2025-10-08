@@ -1,7 +1,9 @@
 version: 1
 
 services:
-  # Django Backend (Web API)
+  # ----------------------------------------------------------------
+  # 1. Django Backend (Web API)
+  # ----------------------------------------------------------------
   - type: web
     name: hr-recruitment-backend
     env: python
@@ -37,7 +39,9 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: "https://hr-recruitment-frontend.onrender.com"
 
-  # Celery Worker
+  # ----------------------------------------------------------------
+  # 2. Celery Worker
+  # ----------------------------------------------------------------
   - type: worker
     name: hr-recruitment-worker
     env: python
@@ -58,20 +62,28 @@ services:
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
 
-  # Redis Service
+  # ----------------------------------------------------------------
+  # 3. Redis Service
+  # ----------------------------------------------------------------
   - type: redis
     name: hr-recruitment-redis
     region: frankfurt
     plan: starter
-    ipAllowList: []  # ✅ Required for Render Redis — allows internal connections
+    ipAllowList: [] # ✅ required by Render to allow internal access
 
-  # React Frontend (Static Site)
+  # ----------------------------------------------------------------
+  # 4. React Frontend (Static Site)
+  # ----------------------------------------------------------------
   - type: web
     name: hr-recruitment-frontend
     env: static
     plan: starter
     buildCommand: "npm install --prefix frontend && npm run build --prefix frontend"
-    publishPath: frontend/build
+    staticPublishPath: frontend/build # ✅ correct field name
     envVars:
       - key: REACT_APP_BACKEND_URL
         value: "https://hr-recruitment-backend.onrender.com"
+
+databases:
+  - name: hr-recruitment-db
+    region: frankfurt
