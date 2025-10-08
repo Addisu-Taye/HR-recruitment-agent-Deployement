@@ -76,7 +76,7 @@ services:
       
       # FIX 4: Worker should inherit DATABASE_URL from the web service which got it from the database link
       - key: DATABASE_URL 
-        fromService: hr-recruitment-backend 
+        fromDatabase: hr-recruitment-db  
         
       - key: CELERY_BROKER_URL
         value: "redis://hr-recruitment-redis:6379/0"
