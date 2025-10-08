@@ -5,14 +5,19 @@ version: v1
 
 services:
   # ----------------------------------------------------------------
-  # 1. Django Backend (Web Service)
+  # 1. Django Backend (Web Service - API)
   # ----------------------------------------------------------------
   - type: web
     name: hr-recruitment-backend
     env: python
     region: frankfurt
+    plan: starter # Use a paid tier for better stability than free
 
-    buildCommand: "pip install -r requirements.txt"
+    # Optimized buildCommand for PII/spaCy, removing unnecessary 'download'
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m spacy link en_core_web_md en_core_web_md --force
+    
     startCommand: "python backend/manage.py collectstatic --noinput && python backend/manage.py migrate && gunicorn hr_core.wsgi:application"
 
     envVars:
@@ -23,25 +28,70 @@ services:
       - key: WEB_CONCURRENCY
         value: "4"
       
+      # Database and AI Service URLs
       - key: DATABASE_URL
         value: "YOUR_DATABASE_URL" # Use the Render dashboard to link securely
       - key: HF_SPACE_API_URL
         value: "YOUR_GRADIO_SPACE_API_URL"
+      
+      # Brevo/SMTP Config for Email
+      - key: BREVO_SMTP_KEY
+        generateValue: true # Securely store your Brevo SMTP key
+      - key: BREVO_SMTP_LOGIN
+        value: "your-brevo-login-email@example.com"
+      
+      # Celery/Redis Broker URL (Internal link to the Redis instance)
+      - key: CELERY_BROKER_URL
+        value: "redis://hr-recruitment-redis:6379/0" # Internal name link to the redis service
+
       - key: CORS_ALLOWED_ORIGINS
         value: "https://hr-recruitment-frontend.onrender.com"
+        
+  # ----------------------------------------------------------------
+  # 2. Celery Worker (Background Service)
+  # ----------------------------------------------------------------
+  - type: worker
+    name: hr-recruitment-worker
+    env: python
+    region: frankfurt
+    plan: starter # Dedicated worker service usually needs Starter/Pro tier
+    
+    # Must use the same build command as the web service to get spaCy model
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m spacy link en_core_web_md en_core_web_md --force
+      
+    # Command to start the Celery worker process
+    startCommand: "celery -A hr_core worker -l info"
+    
+    envVars:
+      - key: SECRET_KEY
+        fromService: hr-recruitment-backend # Reuse the secret key from the API service
+      - key: DATABASE_URL
+        fromService: hr-recruitment-backend
+      - key: CELERY_BROKER_URL
+        value: "redis://hr-recruitment-redis:6379/0"
 
   # ----------------------------------------------------------------
-  # 2. React Frontend (Legacy Static Site Workaround)
+  # 3. Redis Service (Message Broker for Celery)
   # ----------------------------------------------------------------
-  - type: web  # Required to bypass your Render account's parsing issue
+  - type: redis
+    name: hr-recruitment-redis
+    region: frankfurt
+    plan: starter # Redis usually requires at least a Starter plan
+
+  # ----------------------------------------------------------------
+  # 4. React Frontend (Static Site)
+  # ----------------------------------------------------------------
+  - type: web
     name: hr-recruitment-frontend
     region: frankfurt
-    runtime: static # ✅ CORRECT: Signals this web service should be treated as a static site
+    runtime: static 
     
     rootDir: frontend
     
     buildCommand: "npm install && npm run build"
-    publishPath: build # ✅ CORRECT: Use the modern 'publishPath' property
+    publishPath: build 
     
     envVars:
       - key: REACT_APP_BACKEND_URL

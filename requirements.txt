@@ -1,13 +1,28 @@
+# Core Django Stack
 Django==4.2.7
 djangorestframework==3.14.0
+
+# File Processing
 PyPDF2==3.0.1
+python-docx
+
+# Communication & Server
 gunicorn==21.2.0
 requests==2.31.0
 brevo-python==1.2.0
 
-# --- Required for Render/Production ---
-dj-database-url            # Required to parse the DATABASE_URL environment variable
-psycopg2-binary            # Required for PostgreSQL database connectivity
-django-cors-headers        # Required to allow  React frontend to communicate with the Django API
-python-dotenv   
-python-docx           
+# --- Render/Production & Configuration ---
+dj-database-url
+psycopg2-binary
+django-cors-headers
+python-decouple
+
+# --- PII Redaction (Critical Security Feature) ---
+presidio-analyzer
+presidio-anonymizer
+spacy>=3.0.0             # Required base library for Presidio
+en-core-web-md==3.8.0    # Switched from '-lg' to '-md' for Free Tier memory optimization .use en-core-web-lg for large model⚠️
+
+# --- Asynchronous Tasks ---
+celery
+redis
