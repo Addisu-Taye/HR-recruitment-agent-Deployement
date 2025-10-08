@@ -77,7 +77,7 @@ services:
   - type: web
     name: hr-recruitment-frontend
     env: static
-    plan: starter
+    plan: free
     buildCommand: "npm install --prefix frontend && npm run build --prefix frontend"
     staticPublishPath: frontend/build # ✅ correct field name
     envVars:
