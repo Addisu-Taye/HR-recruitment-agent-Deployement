@@ -98,9 +98,8 @@ services:
     region: frankfurt
     runtime: static
     rootDir: frontend
-
     buildCommand: "npm install && npm run build"
-    publishPath: build
+    publishPath: frontend/build   # <-- must be relative to rootDir
 
     envVars:
       - key: REACT_APP_BACKEND_URL
