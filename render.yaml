@@ -1,13 +1,16 @@
 # render.yaml
+# ==========================================================
+# Render Deployment — Django Backend Only (Free Tier)
+# ==========================================================
 
 services:
-  # ----------------------------------------------------------------
-  # 1. Django Backend (API)
-  # ----------------------------------------------------------------
+  # --------------------------------------------------------
+  # Django Backend (API)
+  # --------------------------------------------------------
   - type: web
     name: hr-recruitment-backend
     env: python
-    plan: starter
+    plan: free
     rootDir: backend
 
     buildCommand: |
@@ -28,73 +31,6 @@ services:
       - key: WEB_CONCURRENCY
         value: "4"
       - key: DATABASE_URL
-        fromDatabase:
-          name: hr-recruitment-db
-          property: connectionString
-      - key: HF_SPACE_API_URL
-        value: "YOUR_GRADIO_SPACE_API_URL"
-      - key: BREVO_SMTP_KEY
-        generateValue: true
-      - key: BREVO_SMTP_LOGIN
-        value: "your-brevo-login-email@example.com"
-      - key: CELERY_BROKER_URL
-        value: "redis://hr-recruitment-redis:6379/0"
+        value: "YOUR_EXTERNAL_DATABASE_URL"
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://hr-recruitment-frontend.onrender.com"
-
-  # ----------------------------------------------------------------
-  # 2. Celery Worker
-  # ----------------------------------------------------------------
-  - type: worker
-    name: hr-recruitment-worker
-    env: python
-    plan: starter
-    rootDir: backend
-
-    buildCommand: |
-      pip install -r requirements.txt
-      python -m spacy download en_core_web_md
-      python -m spacy link en_core_web_md en_core_web_md --force
-
-    startCommand: celery -A hr_core worker -l info
-
-    envVars:
-      - key: SECRET_KEY
-        value: "${SECRET_KEY}"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: hr-recruitment-db
-          property: connectionString
-      - key: CELERY_BROKER_URL
-        value: "redis://hr-recruitment-redis:6379/0"
-
-  # ----------------------------------------------------------------
-  # 3. Redis Service
-  # ----------------------------------------------------------------
-  - type: redis
-    name: hr-recruitment-redis
-    ipAllowList: []
-    plan: free
-
-  # ----------------------------------------------------------------
-  # 4. React Frontend (Static Build)
-  # ----------------------------------------------------------------
-  - type: web
-    name: hr-recruitment-frontend
-    env: static
-    plan: starter
-    buildCommand: npm install && npm run build
-    staticPublishPath: build
-
-    envVars:
-      - key: REACT_APP_BACKEND_URL
-        value: "https://hr-recruitment-backend.onrender.com"
-
-# ----------------------------------------------------------------
-# 5. PostgreSQL Database
-# ----------------------------------------------------------------
-databases:
-  - name: hr-recruitment-db
-    databaseName: hr_recruitment_db
-    user: hr_admin
-    plan: free
+        value: "https://your-frontend-domain.com"
