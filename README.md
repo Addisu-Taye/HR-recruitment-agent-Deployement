@@ -179,7 +179,5 @@ services:
 
 GitHub Push → Render Blueprint → **Build with PII Dependencies** → Auto Build → Zero-Downtime Deploy → Monitoring
 
-> **💡 Tip**
-> Pin this README.md to your GitHub repo homepage and add **"Deploy to Render"** and **"View Live Demo"** badges to showcase your secure deployment!
->
+
 > © 2025 Addisu Taye— Full-Stack AI-Powered Recruitment Deployment Guide
