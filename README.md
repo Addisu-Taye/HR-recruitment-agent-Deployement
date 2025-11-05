@@ -50,6 +50,8 @@ An end-to-end **AI-powered HR recruitment system** that automates the entire hir
 
 ## 🧩 Agent Roles and LangGraph Workflow
 
+_The diagram below is visible when viewed on GitHub._
+
 ```mermaid
 graph TD
     A(JobScraperAgent) --> B(CandidateMatcherAgent)
@@ -106,7 +108,7 @@ graph TD
 
 ```bash
 # Clone repo
-git clone https://github.com/addisu-taye/hr-recruitment-agent.git
+git clone https://github.com/your-username/hr-recruitment-agent.git
 cd hr-recruitment-agent
 
 # Backend Setup
@@ -171,11 +173,7 @@ Render simplifies deployment for **React (Frontend)** + **Django (Backend)** + *
 
 ### 🔐 PII Redaction Workflow
 
-1. Resume uploaded → Django extracts text  
-2. PII redaction via **Presidio** (`PERSON`, `EMAIL`, `PHONE_NUMBER`, etc.)  
-3. Only **redacted** text sent to the AI layer  
-4. Database stores original name/email but **redacted resume_text**  
-5. Results combined securely for admin display  
+_The diagram below is visible when viewed on GitHub._
 
 ```mermaid
 graph TD
