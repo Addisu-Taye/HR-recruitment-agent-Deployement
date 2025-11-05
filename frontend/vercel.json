@@ -2,13 +2,14 @@
   "version": 2,
   "name": "hr-recruitment-frontend",
   "builds": [
-    { "src": "package.json", "use": "@vercel/static-build", "config": {} }
+    { "src": "package.json", "use": "@vercel/static-build" }
   ],
   "routes": [
     { "handle": "filesystem" },
     { "src": "/.*", "dest": "/index.html" }
   ],
   "env": {
-    "REACT_APP_BACKEND_URL": "https://hr-recruitment-backend.onrender.com"
+    "REACT_APP_BACKEND_URL": "https://hr-recruitment-backend.onrender.com",
+    "CI": "false"
   }
 }

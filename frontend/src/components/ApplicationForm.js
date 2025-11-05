@@ -33,7 +33,7 @@ export default function ApplicationForm() {
   const handleFileChange = e => {
   const file = e.target.files[0];
   if (file) {
-    const validTypes = ['application/pdf', 'text/plain', 'application/msword'];
+    //const validTypes = ['application/pdf', 'text/plain', 'application/msword'];
     const validExtensions = ['.pdf', '.txt', '.doc', '.docx'];
     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
     
