@@ -239,6 +239,106 @@ services:
 
 ---
 
+# 🛠️ Maintenance & Troubleshooting Guide
+
+## 📌 1. Routine Maintenance Tasks
+- **Database Backup**
+  - Perform daily automated backups.
+  - Store copies on secure remote storage.
+- **Log Rotation**
+  - Clear old logs weekly.
+  - Monitor error logs for unusual activities.
+- **Dependency Updates**
+  - Update Flutter, Dart, packages, and server libraries monthly.
+- **Security Checks**
+  - Review API keys, tokens, and SSL certificates.
+  - Verify roles and permission assignments.
+- **Server Health Monitoring**
+  - CPU, RAM, Disk usage checks.
+  - Restart stalled background services.
+
+---
+
+## 📌 2. Common Issues & Fixes
+
+### ❗ App Not Syncing (Offline → Online)
+- Check internet connectivity.
+- Verify API base URL configuration.
+- Ensure WorkManager is running properly.
+- Confirm server accepts POST/PUT requests.
+
+### ❗ Login Failure
+- Validate PIN or authentication token.
+- Clear corrupted local cache.
+- Confirm user is active in the backend.
+
+### ❗ GPS Not Capturing
+- Ensure location permission is granted.
+- Enable high-accuracy mode.
+- Restart WorkManager task.
+- Check device battery optimization restrictions.
+
+### ❗ API Errors (500, 404, 401)
+- Check backend logs for the exact exception.
+- Verify database connection state.
+- Validate request payload and headers.
+- Check URL routes in Django/Node/.NET API.
+
+---
+
+## 📌 3. Troubleshooting Workflow
+
+1. **Identify the error**  
+   - Error message  
+   - Log file  
+   - Device or server source  
+
+2. **Isolate the cause**  
+   - Network  
+   - Database  
+   - Authentication  
+   - Background service  
+   - Permission issue  
+
+3. **Apply the fix**  
+   - Restart service  
+   - Clear cache  
+   - Update configuration  
+   - Fix code if needed  
+
+4. **Verify after fixing**  
+   - Retest the module  
+   - Check logs again  
+   - Sync data to confirm resolution  
+
+---
+
+## 📌 4. Tools Required
+- Postman / Thunder Client  
+- SQL Server / MySQL Workbench  
+- VS Code / Android Studio  
+- Device Logcat Viewer  
+- Server Log Monitor  
+- Network inspection tools  
+
+---
+
+## 📌 5. Preventive Measures
+- Implement automated alerts for failures.
+- Use monitoring dashboards (Grafana/Prometheus/CloudWatch).
+- Schedule periodic code reviews.
+- Set automatic server restarts during off-hours.
+- Maintain clean version control (Git branching strategy).
+
+---
+
+## 📌 6. When to Escalate
+- Repeated sync failures for more than 24 hours.
+- Database corruption or deadlocks.
+- Authentication service outage.
+- Unexpected app crashes across multiple devices.
+
+
 ## 📜 License
 
 **MIT License © 2025 Addisu Taye Dadi**
