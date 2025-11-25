@@ -239,104 +239,179 @@ services:
 
 ---
 
-# 🛠️ Maintenance & Troubleshooting Guide
+# 🛠️ Troubleshooting & Maintenance
 
-## 📌 1. Routine Maintenance Tasks
-- **Database Backup**
-  - Perform daily automated backups.
-  - Store copies on secure remote storage.
-- **Log Rotation**
-  - Clear old logs weekly.
-  - Monitor error logs for unusual activities.
-- **Dependency Updates**
-  - Update Flutter, Dart, packages, and server libraries monthly.
-- **Security Checks**
-  - Review API keys, tokens, and SSL certificates.
-  - Verify roles and permission assignments.
-- **Server Health Monitoring**
-  - CPU, RAM, Disk usage checks.
-  - Restart stalled background services.
+This section covers common issues, fixes, and long-term maintenance routines to ensure smooth operation of the AI-powered HR Recruitment Agent.
 
 ---
 
-## 📌 2. Common Issues & Fixes
+## ❗ Common Issues & Fixes
 
-### ❗ App Not Syncing (Offline → Online)
-- Check internet connectivity.
-- Verify API base URL configuration.
-- Ensure WorkManager is running properly.
-- Confirm server accepts POST/PUT requests.
+### 1. Backend Not Responding (500 or 502 on Render)
+- Frontend shows **"Server Error"**
+- API endpoints return **500**
+- Render logs show migration or import errors
 
-### ❗ Login Failure
-- Validate PIN or authentication token.
-- Clear corrupted local cache.
-- Confirm user is active in the backend.
-
-### ❗ GPS Not Capturing
-- Ensure location permission is granted.
-- Enable high-accuracy mode.
-- Restart WorkManager task.
-- Check device battery optimization restrictions.
-
-### ❗ API Errors (500, 404, 401)
-- Check backend logs for the exact exception.
-- Verify database connection state.
-- Validate request payload and headers.
-- Check URL routes in Django/Node/.NET API.
+**Fixes**
+- Run database migrations:
+  ```bash
+  python backend/manage.py migrate
+  ```
+- Verify required environment variables:
+  - `SECRET_KEY`
+  - `DEBUG=False`
+  - `HF_SPACE_API_URL`
+- Add Render domain to `ALLOWED_HOSTS`
 
 ---
 
-## 📌 3. Troubleshooting Workflow
+### 2. AI Screening Not Working (Timeouts or Empty Response)
+- Resume screening stalls or exceeds 30 seconds  
+- Hugging Face Space API returns empty results  
+- Backend logs show timeout exceptions  
 
-1. **Identify the error**  
-   - Error message  
-   - Log file  
-   - Device or server source  
-
-2. **Isolate the cause**  
-   - Network  
-   - Database  
-   - Authentication  
-   - Background service  
-   - Permission issue  
-
-3. **Apply the fix**  
-   - Restart service  
-   - Clear cache  
-   - Update configuration  
-   - Fix code if needed  
-
-4. **Verify after fixing**  
-   - Retest the module  
-   - Check logs again  
-   - Sync data to confirm resolution  
+**Fixes**
+- Restart Hugging Face Space  
+- Add retry logic in API call  
+- Increase Django timeout to 45 seconds if needed  
 
 ---
 
-## 📌 4. Tools Required
-- Postman / Thunder Client  
-- SQL Server / MySQL Workbench  
-- VS Code / Android Studio  
-- Device Logcat Viewer  
-- Server Log Monitor  
-- Network inspection tools  
+### 3. CORS Errors From React Frontend
+Browser displays:  
+```
+No 'Access-Control-Allow-Origin' header
+```
+
+**Fixes**  
+Add this to Django:
+```python
+CORS_ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://your-frontend.onrender.com"
+]
+```
 
 ---
 
-## 📌 5. Preventive Measures
-- Implement automated alerts for failures.
-- Use monitoring dashboards (Grafana/Prometheus/CloudWatch).
-- Schedule periodic code reviews.
-- Set automatic server restarts during off-hours.
-- Maintain clean version control (Git branching strategy).
+### 4. Static Files Not Loading in Production (404)
+
+**Fixes**
+- Run:
+  ```bash
+  python backend/manage.py collectstatic --noinput
+  ```
+- Ensure:
+  ```python
+  STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+  ```
 
 ---
 
-## 📌 6. When to Escalate
-- Repeated sync failures for more than 24 hours.
-- Database corruption or deadlocks.
-- Authentication service outage.
-- Unexpected app crashes across multiple devices.
+### 5. SQLite Showing “Database Locked”
+
+**Symptoms**
+- Admin freezes  
+- AI scoring fails intermittently  
+
+**Fix**  
+Switch to PostgreSQL on Render.
+
+---
+
+### 6. Resume Parsing Extracts Wrong or Missing Skills
+
+**Fixes**
+- Confirm the correct Hugging Face NER model  
+- Improve parsing using `presidio-analyzer`  
+- Validate extracted raw text before screening  
+
+---
+
+### 7. Django-Q Tasks Not Executing
+- Emails not sent  
+- Interview scheduling failing  
+
+**Fixes**
+Run worker manually:
+```bash
+python manage.py qcluster
+```
+
+Or configure a Render Worker Service.
+
+---
+
+# 🔧 System Maintenance
+
+## Weekly Maintenance Checklist
+- Clear old job logs via Django Admin  
+- Review Render logs for failing API calls  
+- Restart Hugging Face Space to clear memory  
+- Test PII redaction via Django shell  
+- Verify AI accuracy on sample resumes  
+
+---
+
+# 🔒 Database Backups
+
+### PostgreSQL Backup Command
+```bash
+pg_dump --format=c --file=backup.dump $DATABASE_URL
+```
+
+**Recommended**
+- Enable daily automated backups on Render  
+- Store weekly backups offsite (AWS S3, GDrive)  
+
+---
+
+# 🚀 Safe AI Model Upgrades
+
+**Steps**
+1. Deploy new model to staging HF Space  
+2. Test on 5–10 real sample resumes  
+3. Validate inference speed (< 2s per request)  
+4. Update production HF API URL only after approval  
+
+---
+
+# 📈 Scaling Recommendations (Render)
+- Increase backend plan (Starter → Standard)  
+- Add separate Worker Dyno for Django-Q  
+- Enable Render autoscaling  
+- Use PostgreSQL instead of SQLite  
+
+---
+
+# 📊 Monitoring & Alerts
+
+**Recommended Tools**
+- Render Metrics → CPU, RAM, response time  
+- HF Spaces Logs → AI failures, restarts  
+- PostgreSQL dashboard → table sizes, slow queries  
+- Browser DevTools → CORS & API failures  
+
+---
+
+# 🧹 Removing Old Candidate Data
+
+```bash
+python manage.py clearsessions
+python manage.py purge_old_candidates
+```
+
+(Optional: run as a cron job in Render Worker)
+
+---
+
+# 💡 Stability Tips
+- Always keep `DEBUG=False` in production  
+- Store only redacted resume text (never raw files)  
+- Restart HF Space monthly to free memory  
+- Log all AI errors for debugging  
+- Avoid storing large PDF/blob data in the DB  
+
 
 
 ## 📜 License
